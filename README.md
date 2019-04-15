@@ -161,6 +161,77 @@ kubectl get ingresses
 curl localhost:80
 ```
 
+## deployement
+```
+cat kubia-rc-and-service-v1.yaml
+kubectl create -f kubia-rc-and-service-v1.yaml
+kubectl get svc kubia
+while true; do curl http://10.98.204.67; done
+(ctrl + c)
+kubectl rolling-update kubia-v1 kubia-v2 --image=luksa/kubia:v2
+# Command "rolling-update" is deprecated, use "rollout" instead
+# Created kubia-v2
+# Scaling up kubia-v2 from 0 to 3, scaling down kubia-v1 from 3 to 0 (keep 3 pods available, don't exceed 4 pods)
+# Scaling kubia-v2 up to 1
+# Scaling kubia-v1 down to 2
+# Scaling kubia-v2 up to 2
+# Scaling kubia-v1 down to 1
+# Scaling kubia-v2 up to 3
+# Scaling kubia-v1 down to 0
+# Update succeeded. Deleting kubia-v1
+# replicationcontroller/kubia-v2 rolling updated to "kubia-v2"
+
+kubectl get all
+kubectl describe rc kubia-v2
+kubectl describe rc kubia-v1
+kubectl get po --show-labels
+(delete all하고  `kubectl rolling-update kubia-v1 kubia-v2 --image=luksa/kubia:v2 --v 6` 이 명령으로 rollingupdate 로그를 상세히 확인해서 보면 좋음.) 
+kubectl delete rc,svc --all
+
+```
+```
+cat kubia-deployement-v1.yaml
+kubectl create -f kubia-deployement-v1.yaml --record
+kubectl get all
+kubectl rollout status deployment kubia
+
+kubectl expose deployment kubia --port 8080
+while true; do curl http://10.106.231.90:8080; done
+(새로운 터미널 실행)
+kubectl set image deployment kubia nodejs=luksa/kubia:v2
+(ctrl + c)
+
+while true; do curl http://10.106.231.90:8080; done
+kubectl set image deployment kubia nodejs=luksa/kubia:v3 # <- 오류있는 이미지를 배포
+kubectl rollout status deployment kubia
+# Waiting for deployment "kubia" rollout to finish: 2 out of 3 new replicas have been updated...
+# Waiting for deployment "kubia" rollout to finish: 2 out of 3 new replicas have been updated...
+# Waiting for deployment "kubia" rollout to finish: 2 out of 3 new replicas have been updated...
+# Waiting for deployment "kubia" rollout to finish: 1 old replicas are pending termination...
+# Waiting for deployment "kubia" rollout to finish: 1 old replicas are pending termination...
+# deployment "kubia" successfully rolled out
+
+kubectl rollout undo deployment kubia 
+
+kubectl rollout history deployment kubia
+kubectl rollout undo deployment kubia --to-revision=1
+
+cat kubia-deployment-v3-with-readinesscheck.yaml
+# apply 사용!!
+kubectl apply -f kubia-deployment-v3-with-readinesscheck.yaml # v3 이미지는 동작 안하는 이미지임.
+kubectl rollout status deployment kubia
+
+####
+while true; do curl http://10.106.231.90:8080; done   # <- curl 걸어놓고
+kubectl set image deployment kubia nodejs=luksa/kubia:v2 # <- 동작하는 이미지로 이미지 바꾸고
+kubectl set image deployment kubia nodejs=luksa/kubia:v3 # <- 동작 안하는 이미지로 바꿔보면 정확히 어떤 설정인지 모르지만(아마도 readinessProbe?) 배포 실패 때문에 자동으로 이전 버전으로 롤백하는 것을 볼 수 있다.
+
+
+```
+
+
+
+
 
 
 ## 아래는 준비중...
@@ -180,7 +251,6 @@ kubectl port-forward pods/nginx 8080:80
 kubectl run nginx --image nginx -namespace demo
 kubectl get all -n demo
 kubectl delete deployment nginx -n demo
-
 
 docker run -d -p 5000:5000 --restart=always --name registry registry:2
 demo-server/deploy.sh

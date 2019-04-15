@@ -1,5 +1,6 @@
 [kubernetes in action github](https://github.com/luksa/kubernetes-in-action)
 
+```
 sudo su -
 minikube start
 minikube status
@@ -30,11 +31,13 @@ kubectl get rc
 
 kubectl delete rc kubia
 kubectl delete svc kubia-http
+```
 
 ## descriptor 예제
+```
 kubectl get po kubia -o yaml
 kubectl get rc kubia -o yaml
-
+```
 
 ```yaml
 apiVersion: v1
@@ -50,8 +53,9 @@ spec:
       protocol: TCP
 ```
 
-    kubectl explain pods
-    kubectl explain pods.spec
+```
+kubectl explain pods
+kubectl explain pods.spec
 
 cd yaml
 kubectl create -f kubia-manual.yaml
@@ -59,8 +63,8 @@ kubectl get all
 kubectl get all -o yaml
 kubectl logs kubia-manual
 
-(minikube 되야하는데 안됨.)kubectl port-forward kubia-manual 8888:8080
-(안됨)curl localhost:8888
+#(minikube 되야하는데 안됨.)kubectl port-forward kubia-manual 8888:8080
+#(안됨)curl localhost:8888
 
 kubectl create -f kubia-manual-with-labels.yaml
 kubectl get po --show-labels
@@ -73,8 +77,6 @@ kubectl get nodes -l gpu=true
 kubectl create -f kubia-gpu.yaml 
 kubectl get all
 
-
-
 kubectl get ns
 kubectl create -f custom-namespace.yaml 
 kubectl create -f kubia-manual.yaml -n custom-namespace 
@@ -84,14 +86,14 @@ delete po -l creation_method=manual
 kubectl delete ns custom-namespace #포드는 네임스페이스가 삭제되면 자동 삭제
 kubectl delete po --all
 kubectl delete all --all
-
+```
 
 ## replicatoin and controller
+```
 kubectl get po
 kubectl create -f liveness-probe.yaml
 kubectl get po
 kubectl describe po liveness-http 
-
 
 kubectl create -f kubia-rc.yaml 
 kubectl get all 
@@ -108,41 +110,34 @@ kubectl edit rc kubia #replicas=8
 kubectl get pods -l app=kubia
 kubectl delete rc kubia
 kubectl delete all --all
-
+```
 
 ## service
+```
 kubectl create -f kubia-rc.yaml 
 kubectl create -f kubia-svc.yaml
 kubectl get svc
-curl [ipa
+curl [ip]
 
 kubectl create -f kubia-svc-loadbalancer.yaml
 kubectl get svc # minikube는 external loadbalancer가 없어서 pending. 클라우드를 쓰면 ip가 할당됨.
+```
 
 #### ingress
+```shell
 minikube addons list
 minikube addons enable ingress
 
 kubectl create -f kubia-ingress.yaml 
 kubectl get ingresses
 curl localhost
+```
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+## 아래는 준비중...
 ## namespace 예제(이건 빠짐....)
+```
 kubectl get all --all-namespaces
 kubectl create namespace demo
 
@@ -162,3 +157,4 @@ kubectl delete deployment nginx -n demo
 docker run -d -p 5000:5000 --restart=always --name registry registry:2
 demo-server/deploy.sh
 http://localhost:5000/v2/demo-server/tags/list
+```

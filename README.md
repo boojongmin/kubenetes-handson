@@ -20,8 +20,8 @@ kubectl expose rc kubia --type=LoadBalancer --name kubia-http
 kubectl get services
 kubectl get pods
 kubectl scale rc kubia --replicas=3
-curl [ip]:8080
 kubectl get pods
+curl [ip]:8080
 kubectl get rc
 
 kubectl run nginx --image nginx --generator=run/v1 --port=80

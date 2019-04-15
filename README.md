@@ -11,35 +11,38 @@ inikube addons list # https://github.com/kubernetes/minikube/blob/master/docs/ad
 minikube dashboard
 # http://127.0.0.1:36065/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/
 
-kubectl get node
+kubectl get node -o wide
 kubectl describe node minikube
 
 kubectl run kubia --image=luksa/kubia  --generator=run/v1 --port=8080
 kubectl get all
-kubectl expose rc kubia --type=LoadBalancer --name kubia-http
-kubectl get services
-kubectl get pods
+kubectl expose rc kubia --type=LoadBalancer --name kubia-http # rc == replicationcontroller
+kubectl get services -o wide
+kubectl get pods -o wide
 kubectl scale rc kubia --replicas=3
 kubectl get pods
-curl [ip]:8080
-kubectl get rc
+kubectl get service
+curl [ip]:8080   # curl $(minikube service kubia-http --url)
+kubectl get rc -o wide
 
 kubectl run nginx --image nginx --generator=run/v1 --port=80
 kubectl get all
 kubectl expose rc nginx --type=LoadBalancer --name nginx-http
+curl [ip]
 kubectl get pods
 kubectl scale rc nginx --replicas=3
 kubectl get pods
 kubectl get rc
 
-kubectl delete rc kubia
 kubectl delete svc kubia-http
 ```
 
 ## descriptor 예제
 ```
-kubectl get po kubia -o yaml
-kubectl get rc kubia -o yaml
+kubectl get po kubia-[문자열] -o yaml
+kubectl get rc kubia -o yaml   # kubectl edit rc kubia <- spec의 replicas 설정 변경후 kubectl get po
+kubectl delete rc kubia
+
 ```
 
 ```yaml
@@ -57,24 +60,31 @@ spec:
 ```
 
 ```
+# yaml 설명을 console에서 보고 싶을때
 kubectl explain pods
 kubectl explain pods.spec
 
+# yaml을 이용해서 쿠버네티스 활용. production에서 사용시 이 yaml은 형상관리 대상
 cd yaml
+cat kubia-manual.yaml
 kubectl create -f kubia-manual.yaml
 kubectl get all
 kubectl get all -o yaml
-kubectl logs kubia-manual
+kubectl logs -f kubia-manual
 
 #(minikube 되야하는데 안됨.)kubectl port-forward kubia-manual 8888:8080
 #(안됨)curl localhost:8888
 
+cat kubia-manual-with-labels.yaml
 kubectl create -f kubia-manual-with-labels.yaml
 kubectl get po --show-labels
 kubectl label po kubia-manual-v2 env=debug --overwrite
+kubectl label po kubia-manual-v2 env=debug --overwrite
+# select by label
 kubectl get po -l env
 kubectl get po -l '!env'
 
+# 특정 노드에 라벨을 추가하여 해당 노드에만 포드가 생겨나는 예제(패스해도 됨)
 kubectl label node minikube gpu=true
 kubectl get nodes -l gpu=true
 kubectl create -f kubia-gpu.yaml 
@@ -94,9 +104,20 @@ kubectl delete all --all
 ## replicatoin and controller
 ```
 kubectl get po
-kubectl create -f liveness-probe.yaml
+
+cat kubia-liveness-probe.yaml
+kubectl create -f kubia-liveness-probe.yaml 
 kubectl get po
-kubectl describe po liveness-http 
+kubectl describe po kubia-liveness
+# 확인
+kubectl expose po kubia-liveness --selector app=kubia-liveness --port 8080
+kubectl get all
+curl 10.96.165.28:8080 -I 
+# You've hit kubia-liveness 메세지 이후 I'm not well. Please restart me! 이 메세지 받으면 
+# kubectl get po를 통해 restart 했는지 확인
+kubectl delete all --all
+
+
 
 kubectl create -f kubia-rc.yaml 
 kubectl get all 

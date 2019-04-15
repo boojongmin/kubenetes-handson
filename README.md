@@ -6,7 +6,10 @@ minikube start
 minikube status
 kubectl cluster-info
 kubectl proxy --port=8080
+(ctrl + c)
+inikube addons list # https://github.com/kubernetes/minikube/blob/master/docs/addons.md
 minikube dashboard
+# http://127.0.0.1:36065/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/
 
 kubectl get node
 kubectl describe node minikube

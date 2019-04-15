@@ -138,13 +138,17 @@ kubectl delete all --all
 
 ## service
 ```
+cat kubia-rc.yaml 
 kubectl create -f kubia-rc.yaml 
+cat kubia-svc.yaml
 kubectl create -f kubia-svc.yaml
+kubectl get all
 kubectl get svc
 curl [ip]
 
+cat kubia-svc-loadbalancer.yaml
 kubectl create -f kubia-svc-loadbalancer.yaml
-kubectl get svc # minikube는 external loadbalancer가 없어서 pending. 클라우드를 쓰면 ip가 할당됨.
+kubectl get svc # minikube는 external loadbalancer가 없어서 external-ip는 pending 상태 유지. 클라우드를 쓰면 ip가 할당됨.
 ```
 
 #### ingress
@@ -154,7 +158,7 @@ minikube addons enable ingress
 
 kubectl create -f kubia-ingress.yaml 
 kubectl get ingresses
-curl localhost
+curl localhost:80
 ```
 
 

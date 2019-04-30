@@ -156,7 +156,7 @@ kubectl get svc # minikube는 external loadbalancer가 없어서 external-ip는 
 minikube addons list
 minikube addons enable ingress
 
-kubectl create -f kubia-ingress.yaml 
+kubectl create -f kubia-ingress.yaml  kubectl run curl --image=radial/busyboxplus:curl -i --tty
 kubectl get ingresses
 curl localhost:80
 ```
@@ -255,4 +255,11 @@ kubectl delete deployment nginx -n demo
 docker run -d -p 5000:5000 --restart=always --name registry registry:2
 demo-server/deploy.sh
 http://localhost:5000/v2/demo-server/tags/list
+```
+
+
+## 자체 dns 확인
+```
+ kubectl run curl --image=radial/busyboxplus:curl -i --tty
+ nslookup mysql
 ```
